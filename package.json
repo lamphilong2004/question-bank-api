@@ -19,7 +19,6 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "passport-local-mongoose": "^9.0.1",
-    "questionbank": "file:../Assigment_2/QuestionBank"
+    "passport-local-mongoose": "^9.0.1"
   }
 }
