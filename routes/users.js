@@ -18,18 +18,39 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function (req
 /* POST signup */
 router.post('/signup', async (req, res, next) => {
   try {
-    const user = await User.register(new User({ username: req.body.username }), req.body.password);
-    if (req.body.admin !== undefined) user.admin = req.body.admin;
-    await user.save();
-    passport.authenticate('local')(req, res, () => {
-      res.statusCode = 200;
+    const username = typeof req.body?.username === 'string' ? req.body.username.trim() : '';
+    const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
+    if (!username || !password) {
+      res.statusCode = 400;
       res.setHeader('Content-Type', 'application/json');
-      res.json({ success: true, status: 'Registration Successful!' });
-    });
+      return res.json({ success: false, message: 'username and password are required' });
+    }
+
+    const user = await User.register(new User({ username }), password);
+
+    // Accept boolean-ish admin values
+    if (typeof req.body?.admin !== 'undefined') {
+      user.admin = req.body.admin === true || req.body.admin === 'true' || req.body.admin === 'on';
+    }
+    await user.save();
+
+    // Do NOT call passport.authenticate() here because this project doesn't use sessions.
+    // Clients should call /users/login to obtain a JWT.
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ success: true, status: 'Registration Successful!' });
   } catch (err) {
+    // passport-local-mongoose uses name: 'UserExistsError'
+    if (err && err.name === 'UserExistsError') {
+      res.statusCode = 409;
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({ success: false, message: err.message || 'User already exists' });
+    }
+
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.json({ err: err });
+    res.json({ success: false, message: err?.message || 'Internal Server Error', err: err });
   }
 });
 
