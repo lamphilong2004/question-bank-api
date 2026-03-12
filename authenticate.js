@@ -46,6 +46,13 @@ exports.verifyAdmin = function (req, res, next) {
     }
 };
 
+exports.verifyAdminOrAuthor = function (req, res, next) {
+    if (req.user && req.user.admin) {
+        return next();
+    }
+    return exports.verifyAuthor(req, res, next);
+};
+
 exports.verifyAuthor = function (req, res, next) {
     Question.findById(req.params.questionId)
         .then(question => {

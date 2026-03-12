@@ -7,8 +7,8 @@ const authenticate = require("../authenticate");
 router.get("/", authenticate.verifyUser, questionCtrl.getQuestions);
 router.get("/:questionId", authenticate.verifyUser, questionCtrl.getQuestionById);
 
-router.post("/", authenticate.verifyUser, authenticate.verifyAdmin, questionCtrl.createQuestion);
+router.post("/", authenticate.verifyUser, questionCtrl.createQuestion);
 router.put("/:questionId", authenticate.verifyUser, authenticate.verifyAdmin, questionCtrl.updateQuestion);
-router.delete("/:questionId", authenticate.verifyUser, authenticate.verifyAdmin, questionCtrl.deleteQuestion);
+router.delete("/:questionId", authenticate.verifyUser, authenticate.verifyAdminOrAuthor, questionCtrl.deleteQuestion);
 
 module.exports = router;
