@@ -55,11 +55,31 @@ router.post('/signup', async (req, res, next) => {
 });
 
 /* POST login */
-router.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
-  var token = authenticate.getToken({ _id: req.user._id });
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', { session: false }, (err, user) => {
+    if (err) return next(err);
+    if (!user) {
+      res.statusCode = 401;
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({ success: false, message: 'Invalid username or password.' });
+    }
+
+    var token = authenticate.getToken({ _id: user._id, admin: user.admin });
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ success: true, token: token, admin: user.admin, status: 'You are successfully logged in!' });
+  })(req, res, next);
+});
+
+/* GET current user profile */
+router.get('/me', authenticate.verifyUser, (req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.json({ success: true, token: token, admin: req.user.admin, status: 'You are successfully logged in!' });
+  res.json({
+    _id: req.user._id,
+    username: req.user.username,
+    admin: Boolean(req.user.admin)
+  });
 });
 
 module.exports = router;
