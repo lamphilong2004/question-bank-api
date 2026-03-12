@@ -38,7 +38,8 @@ exports.createQuestion = async (req, res) => {
 // PUT /questions/:questionId
 exports.updateQuestion = async (req, res) => {
   try {
-    const question = await Question.findByIdAndUpdate(req.params.questionId, req.body, {
+    const { author, _id, ...safeBody } = req.body || {};
+    const question = await Question.findByIdAndUpdate(req.params.questionId, safeBody, {
       new: true,
     });
     if (!question)
